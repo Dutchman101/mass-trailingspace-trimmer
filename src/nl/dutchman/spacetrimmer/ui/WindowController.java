@@ -85,11 +85,9 @@ public class WindowController
         boolean noExtensions = extensionStr == null || extensionStr.trim().isEmpty();
         List<String> extensions;
         if (noExtensions)
-            extensions = new ArrayList<String>(); // empty list, just in case, to avoid nullptr
+            extensions = new ArrayList<>();
         else
-        {
             extensions = Arrays.asList(extensionStr.split(","));
-        }
 
         ExecutorService processService = Executors.newSingleThreadExecutor();
         processService.submit(() -> {
@@ -97,12 +95,14 @@ public class WindowController
             {
 
                 BiFunction<String, List<String>, Boolean> endsWithAny = (dirName, exts) -> {
-                    for (String ext : exts)
+                    try
                     {
-                        if (dirName.endsWith(ext))
-                            return true;
+                        return exts.contains(dirName.substring(dirName.lastIndexOf('.') + 1));
                     }
-                    return false;
+                    catch (IndexOutOfBoundsException e)
+                    {
+                        return false;
+                    }
                 };
                 System.out.println("Step 0 --> Gathering files to modify");
                 stepInformation[0] = new ProcessInformation();
@@ -111,7 +111,7 @@ public class WindowController
                 List<ProcessableFile> processableFiles = Files.walk(Paths.get(directory)).
                         map(p -> new ProcessableFile(p.toFile(), p.toFile().length())).
                         filter(p -> !p.getFile().isDirectory()).
-                        filter(noExtensions ? p -> true : p ->  endsWithAny.apply(p.getFile().getAbsolutePath(), extensions)).
+                        filter(noExtensions ? p -> true : p -> endsWithAny.apply(p.getFile().getAbsolutePath(), extensions)).
                         collect(Collectors.toList());
                 stepInformation[0].end();
 
@@ -136,13 +136,25 @@ public class WindowController
                         try
                         {
                             List<String> lineFiles = new ArrayList<>();
-                            for (String line : Files.readAllLines(file.getFile().toPath(), StandardCharsets.ISO_8859_1))
+                            for (String line : Files.readAllLines(file.getFile().toPath(), StandardCharsets.UTF_8))
                             {
                                 if (trimSpaces)
                                     line = line.replaceAll("\\s+$", "");
-                                if (!trimLines || (trimLines && line != null && !line.trim().isEmpty()))
-                                    lineFiles.add(line);
+
+                                lineFiles.add(line);
                             }
+
+                            if (trimLines)
+                            {
+                                for (int i = lineFiles.size() - 3; i >= 0; i--)
+                                {
+                                    if (lineFiles.get(i).trim().isEmpty() &&
+                                            lineFiles.get(i+1).trim().isEmpty() &&
+                                            lineFiles.get(i+2).trim().isEmpty())
+                                        lineFiles.remove(i);
+                                }
+                            }
+
                             Files.write(file.getFile().toPath(), lineFiles);
                         }
                         catch (IOException e)

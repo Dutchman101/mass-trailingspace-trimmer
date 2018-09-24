@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="SpaceTrimmer:jar">
+    <output-path>$PROJECT_DIR$/output/artifacts/SpaceTrimmer_jar</output-path>
+    <root id="archive" name="SpaceTrimmer.jar">
+      <element id="module-output" name="SpaceTrimmer" />
+    </root>
+  </artifact>
+</component>

@@ -100,7 +100,7 @@
                 <constraints border-constraint="Center"/>
                 <properties>
                   <horizontalAlignment value="0"/>
-                  <text value="Remove empty lines"/>
+                  <text value="Remove excessive empty lines"/>
                 </properties>
               </component>
               <grid id="d154c" binding="fileFormatContainer" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
